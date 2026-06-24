@@ -385,6 +385,10 @@ export default function App() {
     );
   }
 
+  const isSystemPersona = SYSTEM_PERSONAS.some(
+    (p) => p.id === activePersona.id,
+  );
+
   return (
     <div
       className={`min-h-screen flex flex-col justify-between font-sans selection:bg-pink-600 selection:text-white transition-colors duration-200 ${
@@ -393,101 +397,109 @@ export default function App() {
       id="main-container"
     >
       {/* 1. Global Role Switcher & Persona Toolbar */}
-      <div
-        className={`py-3 px-4 border-b sticky top-0 z-50 shadow-md transition-colors duration-250 ${
-          isDarkMode
-            ? "bg-gray-950 border-gray-850"
-            : "bg-white border-slate-200 text-slate-900"
-        }`}
-      >
-        <div className="max-w-[1300px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span
-              className={`text-[10px] font-mono tracking-widest uppercase ${
-                isDarkMode ? "text-gray-400" : "text-slate-500"
-              }`}
-            >
-              SANDBOX SIMULATOR WORKSPACE
-            </span>
-
-            {/* Dark & Light theme toggle switch */}
-            <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`p-1 rounded-lg border transition flex items-center gap-1 cursor-pointer text-xs font-semibold ${
-                isDarkMode
-                  ? "bg-gray-900 border-gray-800 text-yellow-400 hover:bg-gray-800"
-                  : "bg-slate-100 border-slate-300 text-indigo-600 hover:bg-slate-200"
-              }`}
-              title="Toggle Dark / Light Mode"
-              id="theme-toggler"
-            >
-              {isDarkMode ? (
-                <>
-                  <Sun className="w-3.5 h-3.5" />
-                  <span className="text-[10px] font-mono uppercase">Light</span>
-                </>
-              ) : (
-                <>
-                  <Moon className="w-3.5 h-3.5" />
-                  <span className="text-[10px] font-mono uppercase">Dark</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <span className="text-gray-400 text-xs font-semibold mr-1 flex items-center gap-1 font-mono">
-              <Users className="w-3.5 h-3.5 text-pink-400" />
-              Active User Persona:
-            </span>
-            {allPersonas.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => {
-                  setActivePersona(p);
-                  localStorage.setItem(
-                    "ticketswap_active_persona",
-                    JSON.stringify(p),
-                  );
-                  setViewingChatTxId(null);
-                  setCheckoutError("");
-                  // Auto route appropriately using navigate under transition
-                  const targetTab = p.role === "admin" ? "ADMIN" : "HOME";
-                  navigate(targetTab, p.id);
-                }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium font-mono transition flex items-center gap-1 cursor-pointer ${
-                  activePersona.id === p.id
-                    ? "bg-pink-600 border border-pink-500/30 text-white shadow shadow-pink-900/30"
-                    : "bg-gray-900 border border-gray-800 text-gray-450 hover:bg-gray-850 hover:text-white"
+      {isSystemPersona && (
+        <div
+          className={`py-3 px-4 border-b sticky top-0 z-50 shadow-md transition-colors duration-250 ${
+            isDarkMode
+              ? "bg-gray-950 border-gray-850"
+              : "bg-white border-slate-200 text-slate-900"
+          }`}
+        >
+          <div className="max-w-[1300px] mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span
+                className={`text-[10px] font-mono tracking-widest uppercase ${
+                  isDarkMode ? "text-gray-400" : "text-slate-500"
                 }`}
               >
-                <img
-                  src={p.avatar}
-                  className="w-4 h-4 rounded-full object-cover shrink-0"
-                  alt=""
-                />
-                <span className="capitalize">
-                  {p.name.split(" ")[0]} ({p.role})
-                </span>
+                SANDBOX SIMULATOR WORKSPACE
+              </span>
+
+              {/* Dark & Light theme toggle switch */}
+              <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className={`p-1 rounded-lg border transition flex items-center gap-1 cursor-pointer text-xs font-semibold ${
+                  isDarkMode
+                    ? "bg-gray-900 border-gray-800 text-yellow-400 hover:bg-gray-800"
+                    : "bg-slate-100 border-slate-300 text-indigo-600 hover:bg-slate-200"
+                }`}
+                title="Toggle Dark / Light Mode"
+                id="theme-toggler"
+              >
+                {isDarkMode ? (
+                  <>
+                    <Sun className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-mono uppercase">
+                      Light
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Moon className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-mono uppercase">
+                      Dark
+                    </span>
+                  </>
+                )}
               </button>
-            ))}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <span className="text-gray-400 text-xs font-semibold mr-1 flex items-center gap-1 font-mono">
+                <Users className="w-3.5 h-3.5 text-pink-400" />
+                Active User Persona:
+              </span>
+              {allPersonas.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => {
+                    setActivePersona(p);
+                    localStorage.setItem(
+                      "ticketswap_active_persona",
+                      JSON.stringify(p),
+                    );
+                    setViewingChatTxId(null);
+                    setCheckoutError("");
+                    // Auto route appropriately using navigate under transition
+                    const targetTab = p.role === "admin" ? "ADMIN" : "HOME";
+                    navigate(targetTab, p.id);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium font-mono transition flex items-center gap-1 cursor-pointer ${
+                    activePersona.id === p.id
+                      ? "bg-pink-600 border border-pink-500/30 text-white shadow shadow-pink-900/30"
+                      : "bg-gray-900 border border-gray-800 text-gray-300 hover:bg-gray-850 hover:text-white"
+                  }`}
+                >
+                  <img
+                    src={p.avatar}
+                    className="w-4 h-4 rounded-full object-cover shrink-0"
+                    alt=""
+                  />
+                  <span className="capitalize">
+                    {p.name.split(" ")[0]} ({p.role})
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 2. Top Header Navigation (Glassmorphic) */}
       <header
-        className={`backdrop-blur-md border-b sticky top-[108px] md:top-[63px] z-[40] transition-colors duration-200 ${
+        className={`backdrop-blur-md border-b sticky z-[40] transition-all duration-200 ${
+          isSystemPersona ? "top-[108px] md:top-[63px]" : "top-0"
+        } ${
           isDarkMode
             ? "bg-gray-950/70 border-gray-850 text-white"
             : "bg-white/85 border-slate-200 text-slate-950"
         }`}
       >
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
           {/* Logo brand */}
           <div
             className="flex items-center gap-2.5 cursor-pointer"
@@ -509,7 +521,7 @@ export default function App() {
           </div>
 
           {/* Nav buttons */}
-          <nav className="flex items-center gap-1 md:gap-2">
+          <nav className="flex flex-wrap items-center justify-center gap-1 md:gap-2">
             <button
               onClick={() => navigate("HOME")}
               className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold font-display transition duration-150 flex items-center gap-1 cursor-pointer ${
@@ -518,9 +530,10 @@ export default function App() {
                     ? "bg-zinc-900 text-pink-500"
                     : "bg-pink-50 text-pink-600"
                   : isDarkMode
-                    ? "text-gray-450 hover:text-white hover:bg-zinc-900/45"
-                    : "text-slate-600 hover:text-slate-955 hover:bg-slate-100"
+                    ? "text-gray-400 hover:text-white hover:bg-zinc-900/45"
+                    : "text-slate-600 hover:text-slate-950 hover:bg-slate-100"
               }`}
+              title="Overview"
             >
               <Compass className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Overview</span>
@@ -534,12 +547,13 @@ export default function App() {
                     ? "bg-zinc-900 text-pink-500"
                     : "bg-pink-50 text-pink-600"
                   : isDarkMode
-                    ? "text-gray-450 hover:text-white hover:bg-zinc-900/45"
+                    ? "text-gray-400 hover:text-white hover:bg-zinc-900/45"
                     : "text-slate-600 hover:text-slate-955 hover:bg-slate-100"
               }`}
+              title="Browse tickets"
             >
               <Filter className="w-3.5 h-3.5" />
-              <span>Browse</span>
+              <span className="hidden sm:inline">Browse</span>
             </button>
 
             {activePersona.role !== "admin" && (
@@ -551,9 +565,10 @@ export default function App() {
                       ? "bg-zinc-900 text-pink-500"
                       : "bg-pink-50 text-pink-600"
                     : isDarkMode
-                      ? "text-gray-450 hover:text-white hover:bg-zinc-900/45"
-                      : "text-slate-600 hover:text-slate-955 hover:bg-slate-100"
+                      ? "text-gray-400 hover:text-white hover:bg-zinc-900/45"
+                      : "text-slate-600 hover:text-slate-950 hover:bg-slate-100"
                 }`}
+                title="Post Ticket"
               >
                 <PlusSquare className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline font-sans">Post Ticket</span>
@@ -568,12 +583,13 @@ export default function App() {
                     ? "bg-zinc-900 text-pink-500"
                     : "bg-pink-50 text-pink-600"
                   : isDarkMode
-                    ? "text-gray-450 hover:text-white hover:bg-zinc-900/45"
-                    : "text-slate-600 hover:text-slate-955 hover:bg-slate-100"
+                    ? "text-gray-400 hover:text-white hover:bg-zinc-900/45"
+                    : "text-slate-600 hover:text-slate-950 hover:bg-slate-100"
               }`}
+              title="Active Swaps & Chats"
             >
               <MessageSquare className="w-3.5 h-3.5" />
-              <span>Swaps</span>
+              <span className="hidden sm:inline">Swaps</span>
               {userTransactions.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-pink-500 border border-gray-950 text-white rounded-full font-bold text-[9px] w-4.5 h-4.5 flex items-center justify-center font-mono animate-pulse">
                   {userTransactions.length}
@@ -589,12 +605,13 @@ export default function App() {
                     ? "bg-zinc-900 text-pink-500"
                     : "bg-pink-50 text-pink-600"
                   : isDarkMode
-                    ? "text-gray-450 hover:text-white hover:bg-zinc-900/45"
+                    ? "text-gray-400 hover:text-white hover:bg-zinc-900/45"
                     : "text-slate-600 hover:text-slate-955 hover:bg-slate-100"
               }`}
+              title="Wallet & Balance"
             >
               <WalletIcon className="w-3.5 h-3.5" />
-              <span>Wallet</span>
+              <span className="hidden sm:inline">Wallet</span>
               {activeWallet && (
                 <span className="hidden md:inline font-mono text-xs px-1">
                   (₹{activeWallet.balance})
@@ -606,11 +623,30 @@ export default function App() {
               <button
                 onClick={() => navigate("ADMIN")}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold font-display border border-red-500/20 bg-red-500/10 text-red-400 transition duration-150 flex items-center gap-1 cursor-pointer`}
+                title="Admin Ops"
               >
                 <Settings className="w-3.5 h-3.5" />
-                <span>Admin Ops</span>
+                <span className="hidden sm:inline">Admin Ops</span>
               </button>
             )}
+
+            {/* Theme Toggle Button */}
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className={`p-1.5 md:p-2 rounded-lg border transition duration-150 flex items-center justify-center cursor-pointer ${
+                isDarkMode
+                  ? "bg-zinc-900 border-zinc-800 text-yellow-400 hover:bg-zinc-850"
+                  : "bg-slate-100 border-slate-200 text-indigo-600 hover:bg-slate-200"
+              }`}
+              title="Toggle Dark/Light Mode"
+              id="header-theme-toggle"
+            >
+              {isDarkMode ? (
+                <Sun className="w-3.5 h-3.5" />
+              ) : (
+                <Moon className="w-3.5 h-3.5" />
+              )}
+            </button>
 
             <button
               onClick={() => {
@@ -669,6 +705,7 @@ export default function App() {
             <LandingPage
               onStartBrowsing={() => navigate("BROWSE")}
               onPostListing={() => navigate("POST")}
+              isDarkMode={isDarkMode}
             />
           )}
 
@@ -678,12 +715,14 @@ export default function App() {
               <div className="browse-gallery-header flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-6 sm:mb-8">
                 <div>
                   <h2
-                    className="text-2xl sm:text-3xl font-extrabold font-display text-white"
+                    className={`text-2xl sm:text-3xl font-extrabold font-display ${isDarkMode ? "text-white" : "text-slate-900"}`}
                     id="browse-gallery-title"
                   >
                     Available Resale Tickets
                   </h2>
-                  <p className="text-gray-450 text-xs mt-1">
+                  <p
+                    className={`text-xs mt-1 ${isDarkMode ? "text-gray-400" : "text-slate-600"}`}
+                  >
                     Guaranteed cheaper than original price. Choose Safe Mode for
                     100% escrow protection.
                   </p>
@@ -698,14 +737,22 @@ export default function App() {
                   <input
                     type="text"
                     placeholder="Search film title or cinema venue..."
-                    className="w-full sm:w-64 px-4 py-2.5 sm:py-2 bg-gray-900 border border-gray-800 rounded-xl text-white text-xs focus:border-pink-500 focus:outline-none placeholder-gray-550 touch-target-input"
+                    className={`w-full sm:w-64 px-4 py-2.5 sm:py-2 border rounded-xl text-xs focus:border-pink-500 focus:outline-none placeholder-gray-500 touch-target-input transition ${
+                      isDarkMode
+                        ? "bg-gray-900 border-gray-800 text-white"
+                        : "bg-white border-slate-200 text-slate-900"
+                    }`}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     aria-label="Search movie title or theatre venue name"
                   />
 
                   <div
-                    className="flex gap-1.5 bg-gray-900 p-1 rounded-xl border border-gray-800/60 w-full sm:w-auto font-sans"
+                    className={`flex gap-1.5 p-1 rounded-xl border w-full sm:w-auto font-sans transition ${
+                      isDarkMode
+                        ? "bg-gray-900 border-gray-800/60"
+                        : "bg-white border-slate-200 shadow-sm"
+                    }`}
                     role="group"
                     aria-label="Discount rate filter toggle options"
                   >
@@ -715,7 +762,9 @@ export default function App() {
                       className={`flex-1 sm:flex-initial px-3 py-2 sm:py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition touch-target-btn ${
                         filterMode === "ALL"
                           ? "bg-pink-600 text-white shadow"
-                          : "text-gray-400"
+                          : isDarkMode
+                            ? "text-gray-400 hover:text-white"
+                            : "text-slate-550 hover:text-slate-800"
                       }`}
                     >
                       All Seats
@@ -726,7 +775,9 @@ export default function App() {
                       className={`flex-1 sm:flex-initial px-3 py-2 sm:py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition touch-target-btn ${
                         filterMode === "SAVINGS_HIGH"
                           ? "bg-pink-600 text-white shadow"
-                          : "text-gray-400"
+                          : isDarkMode
+                            ? "text-gray-400 hover:text-white"
+                            : "text-slate-550 hover:text-slate-800"
                       }`}
                     >
                       High Savings (₹100+)
@@ -738,17 +789,25 @@ export default function App() {
               {/* Grid checklist */}
               {filteredListings.length === 0 ? (
                 <div
-                  className="text-center py-20 bg-gray-900/20 border border-gray-850 rounded-2xl p-6"
+                  className={`text-center py-20 rounded-2xl p-6 border ${
+                    isDarkMode
+                      ? "bg-gray-900/20 border-gray-850"
+                      : "bg-white border-slate-200 shadow-sm"
+                  }`}
                   role="status"
                 >
                   <Ticket
-                    className="w-12 h-12 text-zinc-600 mx-auto mb-4 stroke-1 animate-pulse"
+                    className="w-12 h-12 text-zinc-650 mx-auto mb-4 stroke-1 animate-pulse"
                     aria-hidden="true"
                   />
-                  <h4 className="text-white font-bold font-display">
+                  <h4
+                    className={`font-bold font-display ${isDarkMode ? "text-white" : "text-slate-800"}`}
+                  >
                     No Available Resales Found
                   </h4>
-                  <p className="text-gray-500 text-xs mt-1 leading-normal max-w-sm mx-auto">
+                  <p
+                    className={`text-xs mt-1 leading-normal max-w-sm mx-auto ${isDarkMode ? "text-gray-500" : "text-slate-500"}`}
+                  >
                     No tickets match your parameters. Switch to user <b>Maya</b>{" "}
                     or <b>Priya</b> and click <b>Post Resale</b> to list.
                   </p>
@@ -765,10 +824,16 @@ export default function App() {
                     return (
                       <article
                         key={l.id}
-                        className={`glass-card rounded-2xl overflow-hidden flex flex-col justify-between group border transition-all duration-200 relative ${
+                        className={`rounded-2xl overflow-hidden flex flex-col justify-between group border transition-all duration-200 relative ${
+                          isDarkMode ? "glass-card" : "bg-white shadow-sm"
+                        } ${
                           isOwnListing
-                            ? "border-indigo-500/25"
-                            : "border-gray-800 hover:border-pink-500/40 hover:-translate-y-1"
+                            ? isDarkMode
+                              ? "border-indigo-500/25 bg-indigo-500/5"
+                              : "border-indigo-200 bg-indigo-50/10"
+                            : isDarkMode
+                              ? "border-gray-800 hover:border-pink-500/40 hover:-translate-y-1"
+                              : "border-slate-200 hover:border-pink-300 hover:shadow-md hover:-translate-y-1"
                         }`}
                         aria-label={`Resale seat details for ${l.movieName}`}
                       >
@@ -818,20 +883,38 @@ export default function App() {
                         {/* Content panel */}
                         <div className="browse-card-content p-4 sm:p-5 flex-1 flex flex-col justify-between">
                           <div>
-                            <h3 className="text-lg font-bold font-display text-white tracking-tight capitalize truncate">
+                            <h3
+                              className={`text-lg font-bold font-display tracking-tight capitalize truncate ${
+                                isDarkMode ? "text-white" : "text-slate-800"
+                              }`}
+                            >
                               {l.movieName}
                             </h3>
 
-                            <p className="text-gray-400 text-xs mt-1.5 leading-normal truncate">
+                            <p
+                              className={`text-xs mt-1.5 leading-normal truncate ${
+                                isDarkMode ? "text-gray-400" : "text-slate-600"
+                              }`}
+                            >
                               📍 {l.theatreName}
                             </p>
 
-                            <div className="mt-4 grid grid-cols-2 gap-4 border-t border-b border-gray-850/60 py-3 text-xs">
+                            <div
+                              className={`mt-4 grid grid-cols-2 gap-4 border-t border-b py-3 text-xs ${
+                                isDarkMode
+                                  ? "border-gray-850/60"
+                                  : "border-slate-100"
+                              }`}
+                            >
                               <div>
-                                <p className="text-gray-500 text-[9px] font-mono uppercase">
+                                <p
+                                  className={`text-[9px] font-mono uppercase ${isDarkMode ? "text-gray-500" : "text-slate-400"}`}
+                                >
                                   Date / Showtime
                                 </p>
-                                <p className="font-semibold text-white mt-0.5 truncate uppercase">
+                                <p
+                                  className={`font-semibold mt-0.5 truncate uppercase ${isDarkMode ? "text-white" : "text-slate-700"}`}
+                                >
                                   {new Date(l.showTime).toLocaleString(
                                     undefined,
                                     { dateStyle: "short", timeStyle: "short" },
@@ -840,10 +923,14 @@ export default function App() {
                               </div>
 
                               <div>
-                                <p className="text-gray-500 text-[9px] font-mono uppercase">
+                                <p
+                                  className={`text-[9px] font-mono uppercase ${isDarkMode ? "text-gray-500" : "text-slate-400"}`}
+                                >
                                   Seat coordinates
                                 </p>
-                                <p className="font-semibold text-white mt-0.5 truncate uppercase">
+                                <p
+                                  className={`font-semibold mt-0.5 truncate uppercase ${isDarkMode ? "text-white" : "text-slate-700"}`}
+                                >
                                   {l.seatNumber}
                                 </p>
                               </div>
@@ -854,33 +941,47 @@ export default function App() {
                           <div className="browse-card-actions mt-4 sm:mt-5">
                             <div className="flex items-end justify-between mb-4">
                               <div>
-                                <p className="text-gray-500 text-[9px] font-mono">
+                                <p
+                                  className={`text-[9px] font-mono ${isDarkMode ? "text-gray-500" : "text-slate-400"}`}
+                                >
                                   ORIGINAL PRICE
                                 </p>
-                                <p className="text-xs line-through text-gray-500">
+                                <p
+                                  className={`text-xs line-through ${isDarkMode ? "text-gray-500" : "text-slate-400"}`}
+                                >
                                   ₹{l.originalPrice}
                                 </p>
                               </div>
 
                               <div className="text-right">
-                                <p className="text-pink-400 text-[9px] font-mono font-bold">
+                                <p
+                                  className={`text-[9px] font-mono font-bold ${isDarkMode ? "text-pink-400" : "text-pink-600"}`}
+                                >
                                   SWAP PRICE
                                 </p>
-                                <p className="text-xl font-extrabold text-pink-400 font-display">
+                                <p
+                                  className={`text-xl font-extrabold font-display ${isDarkMode ? "text-pink-400" : "text-pink-600"}`}
+                                >
                                   ₹{l.sellingPrice}
                                 </p>
                               </div>
                             </div>
 
                             {isOwnListing ? (
-                              <div className="text-center p-2.5 bg-indigo-500/5 text-indigo-400 rounded-xl text-xs font-mono font-bold">
+                              <div
+                                className={`text-center p-2.5 rounded-xl text-xs font-mono font-bold ${
+                                  isDarkMode
+                                    ? "bg-indigo-500/5 text-indigo-400"
+                                    : "bg-indigo-50 text-indigo-600"
+                                }`}
+                              >
                                 Manage on Chats tab
                               </div>
                             ) : l.status === "AVAILABLE" ? (
                               <button
                                 onClick={() => handleSelectListingToBuy(l)}
                                 aria-label={`Initiate escrow purchase swap process for movie ticket seat ${l.seatNumber} of ${l.movieName} at discount rate ₹${l.sellingPrice}`}
-                                className="touch-target-btn w-full py-2.5 bg-pink-600 hover:bg-pink-500 font-bold font-display rounded-xl text-xs uppercase tracking-wider text-center flex items-center justify-center gap-1.5 transition cursor-pointer"
+                                className="touch-target-btn w-full py-2.5 bg-pink-600 hover:bg-pink-500 text-white font-bold font-display rounded-xl text-xs uppercase tracking-wider text-center flex items-center justify-center gap-1.5 transition cursor-pointer"
                               >
                                 Get Ticket Resale
                                 <ArrowRight
@@ -889,7 +990,13 @@ export default function App() {
                                 />
                               </button>
                             ) : (
-                              <div className="text-center p-2.5 bg-gray-900 text-gray-500 rounded-xl text-xs font-bold">
+                              <div
+                                className={`text-center p-2.5 rounded-xl text-xs font-bold ${
+                                  isDarkMode
+                                    ? "bg-gray-900 text-gray-500"
+                                    : "bg-slate-100 text-slate-450"
+                                }`}
+                              >
                                 Locked / swapped
                               </div>
                             )}
@@ -924,28 +1031,48 @@ export default function App() {
                 />
               ) : (
                 <div className="max-w-4xl mx-auto px-4 py-8">
-                  <h2 className="text-3xl font-extrabold font-display text-white mb-2">
+                  <h2
+                    className={`text-3xl font-extrabold font-display mb-2 ${isDarkMode ? "text-white" : "text-slate-900"}`}
+                  >
                     My Active Ticket Swaps
                   </h2>
-                  <p className="text-gray-400 text-xs mb-8">
+                  <p
+                    className={`text-xs mb-8 ${isDarkMode ? "text-gray-400" : "text-slate-600"}`}
+                  >
                     Check match statuses, coordinate physically, and release
                     securely held escrow cash.
                   </p>
 
                   {userTransactions.length === 0 ? (
-                    <div className="text-center py-20 bg-gray-900/20 border border-gray-850 rounded-2xl p-6">
-                      <MessageSquare className="w-12 h-12 text-zinc-650 mx-auto mb-4 animate-bounce" />
-                      <h4 className="text-white font-display font-bold">
+                    <div
+                      className={`text-center py-20 rounded-2xl p-6 border ${
+                        isDarkMode
+                          ? "bg-gray-900/20 border-gray-850"
+                          : "bg-white border-slate-200"
+                      }`}
+                    >
+                      <MessageSquare className="w-12 h-12 text-zinc-600 mx-auto mb-4 animate-bounce" />
+                      <h4
+                        className={`font-display font-bold ${isDarkMode ? "text-white" : "text-slate-800"}`}
+                      >
                         No Active Swap Match Initiated
                       </h4>
-                      <p className="text-gray-500 text-xs mt-1 max-w-sm mx-auto leading-normal">
+                      <p
+                        className={`text-xs mt-1 max-w-sm mx-auto leading-normal ${isDarkMode ? "text-gray-500" : "text-slate-500"}`}
+                      >
                         You are not currently processing any buying connections
                         or selling transactions. Go to <b>Browse</b> to buy a
                         ticket!
                       </p>
                     </div>
                   ) : (
-                    <div className="divide-y divide-gray-850 border border-gray-850 bg-gray-900/40 rounded-2xl overflow-hidden">
+                    <div
+                      className={`border rounded-2xl overflow-hidden divide-y ${
+                        isDarkMode
+                          ? "divide-gray-850 border-gray-850 bg-gray-900/40"
+                          : "divide-slate-100 border-slate-200 bg-white shadow-sm"
+                      }`}
+                    >
                       {userTransactions
                         .slice()
                         .reverse()
@@ -962,32 +1089,50 @@ export default function App() {
                             <div
                               key={tx.id}
                               onClick={() => setViewingChatTxId(tx.id)}
-                              className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-gray-950/50 cursor-pointer transition"
+                              className={`p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 cursor-pointer transition ${
+                                isDarkMode
+                                  ? "hover:bg-gray-950/50"
+                                  : "hover:bg-slate-50"
+                              }`}
                             >
                               <div className="flex items-center gap-3.5">
-                                <div className="w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-pink-400 font-bold shrink-0">
+                                <div
+                                  className={`w-10 h-10 rounded-full border flex items-center justify-center font-bold shrink-0 text-pink-500 ${
+                                    isDarkMode
+                                      ? "bg-indigo-500/10 border-indigo-500/20"
+                                      : "bg-pink-50 border-pink-100"
+                                  }`}
+                                >
                                   {partnerName.substring(0, 1)}
                                 </div>
 
                                 <div>
                                   <div className="flex items-center gap-2">
-                                    <h4 className="text-white text-sm font-bold capitalize">
+                                    <h4
+                                      className={`text-sm font-bold capitalize ${isDarkMode ? "text-white" : "text-slate-800"}`}
+                                    >
                                       {associatedListing
                                         ? associatedListing.movieName
                                         : "Ticket Swap"}
                                     </h4>
                                     <span
-                                      className={`px-2 py-0.5 rounded font-mono text-[9px] font-bold ${
+                                      className={`px-2 py-0.5 rounded font-mono text-[9px] font-bold uppercase ${
                                         tx.mode === "CONNECT"
-                                          ? "bg-indigo-500/10 text-indigo-400"
-                                          : "bg-pink-500/10 text-pink-400"
-                                      } uppercase`}
+                                          ? isDarkMode
+                                            ? "bg-indigo-500/10 text-indigo-400"
+                                            : "bg-indigo-50 text-indigo-600"
+                                          : isDarkMode
+                                            ? "bg-pink-500/10 text-pink-400"
+                                            : "bg-pink-50 text-pink-600"
+                                      }`}
                                     >
                                       {tx.mode} Mode
                                     </span>
                                   </div>
 
-                                  <p className="text-gray-400 text-xs truncate mt-0.5">
+                                  <p
+                                    className={`text-xs truncate mt-0.5 ${isDarkMode ? "text-gray-400" : "text-slate-600"}`}
+                                  >
                                     Matching Swap partner: <b>{partnerName}</b>{" "}
                                     (
                                     {isBuyerMe
@@ -996,7 +1141,13 @@ export default function App() {
                                     )
                                   </p>
 
-                                  <p className="text-[10px] text-gray-500 font-mono mt-1 flex items-center gap-1.5 uppercase">
+                                  <p
+                                    className={`text-[10px] font-mono mt-1 flex items-center gap-1.5 uppercase ${
+                                      isDarkMode
+                                        ? "text-gray-500"
+                                        : "text-slate-500"
+                                    }`}
+                                  >
                                     <CircleDot className="w-2.5 h-2.5 text-pink-500" />
                                     MATCH STATUS: {tx.status}
                                   </p>
@@ -1004,13 +1155,15 @@ export default function App() {
                               </div>
 
                               <div className="flex items-center gap-3 self-end sm:self-auto uppercase">
-                                <span className="text-gray-400 font-mono text-xs font-bold mr-1">
+                                <span
+                                  className={`font-mono text-xs font-bold mr-1 ${isDarkMode ? "text-gray-400" : "text-slate-700"}`}
+                                >
                                   ₹
                                   {associatedListing
                                     ? associatedListing.sellingPrice
                                     : "0"}
                                 </span>
-                                <div className="px-4 py-2 bg-pink-600 hover:bg-pink-500 rounded-xl text-xs font-bold font-display flex items-center gap-1 transition">
+                                <div className="px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-xl text-xs font-bold font-display flex items-center gap-1 transition">
                                   Open Swap Portal
                                   <ChevronRight className="w-4 h-4" />
                                 </div>
