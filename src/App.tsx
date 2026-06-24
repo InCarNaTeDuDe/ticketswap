@@ -22,6 +22,7 @@ import {
   LogOut,
   Sun,
   Moon,
+  User,
 } from "lucide-react";
 
 const LandingPage = React.lazy(() => import("./components/LandingPage"));
@@ -30,6 +31,7 @@ const WalletTab = React.lazy(() => import("./components/WalletTab"));
 const AdminPanel = React.lazy(() => import("./components/AdminPanel"));
 const ChatRoom = React.lazy(() => import("./components/ChatRoom"));
 const LoginPage = React.lazy(() => import("./components/LoginPage"));
+const ProfileTab = React.lazy(() => import("./components/ProfileTab"));
 
 import { SYSTEM_PERSONAS } from "./data";
 import { Listing, Transaction, Wallet, Persona } from "./types";
@@ -62,6 +64,8 @@ export default function App() {
         return "/wallet";
       case "ADMIN":
         return "/admin";
+      case "PROFILE":
+        return "/profile";
       default:
         return "/overview";
     }
@@ -82,6 +86,8 @@ export default function App() {
         return "WALLET";
       case "/admin":
         return "ADMIN";
+      case "/profile":
+        return "PROFILE";
       default:
         return "HOME";
     }
@@ -114,14 +120,21 @@ export default function App() {
 
   // Navigation tabs synced with client-side URL pathing
   const [activeTab, setActiveTab] = useState<
-    "HOME" | "BROWSE" | "POST" | "MESSAGES" | "WALLET" | "ADMIN"
+    "HOME" | "BROWSE" | "POST" | "MESSAGES" | "WALLET" | "ADMIN" | "PROFILE"
   >(() => {
     return pathToTab(window.location.pathname);
   });
 
   // Modern navigation helper utilizing React 19 transitions and bypassing duplicate useEffect hooks
   const navigate = (
-    tab: "HOME" | "BROWSE" | "POST" | "MESSAGES" | "WALLET" | "ADMIN",
+    tab:
+      | "HOME"
+      | "BROWSE"
+      | "POST"
+      | "MESSAGES"
+      | "WALLET"
+      | "ADMIN"
+      | "PROFILE",
     personaId = activePersona.id,
   ) => {
     startTransition(async () => {
@@ -396,8 +409,8 @@ export default function App() {
       }`}
       id="main-container"
     >
-      {/* 1. Global Role Switcher & Persona Toolbar */}
-      {isSystemPersona && (
+      {/* 1. Global Role Switcher & Persona Toolbar - Hidden when actual login happened */}
+      {false && isSystemPersona && (
         <div
           className={`py-3 px-4 border-b sticky top-0 z-50 shadow-md transition-colors duration-250 ${
             isDarkMode
@@ -491,9 +504,7 @@ export default function App() {
 
       {/* 2. Top Header Navigation (Glassmorphic) */}
       <header
-        className={`backdrop-blur-md border-b sticky z-[40] transition-all duration-200 ${
-          isSystemPersona ? "top-[108px] md:top-[63px]" : "top-0"
-        } ${
+        className={`backdrop-blur-md border-b sticky top-0 z-[40] transition-all duration-200 ${
           isDarkMode
             ? "bg-gray-950/70 border-gray-850 text-white"
             : "bg-white/85 border-slate-200 text-slate-950"
@@ -617,6 +628,23 @@ export default function App() {
                   (₹{activeWallet.balance})
                 </span>
               )}
+            </button>
+
+            <button
+              onClick={() => navigate("PROFILE")}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold font-display transition duration-150 flex items-center gap-1 cursor-pointer ${
+                activeTab === "PROFILE"
+                  ? isDarkMode
+                    ? "bg-zinc-900 text-pink-500"
+                    : "bg-pink-50 text-pink-600"
+                  : isDarkMode
+                    ? "text-gray-400 hover:text-white hover:bg-zinc-900/45"
+                    : "text-slate-600 hover:text-slate-950 hover:bg-slate-100"
+              }`}
+              title="My Account Details"
+            >
+              <User className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Profile</span>
             </button>
 
             {activePersona.role === "admin" && (
@@ -1016,6 +1044,7 @@ export default function App() {
               onSubmit={handleCreateListing}
               onCancel={() => navigate("BROWSE")}
               sellerName={activePersona.name}
+              isDarkMode={isDarkMode}
             />
           )}
 
@@ -1193,6 +1222,18 @@ export default function App() {
             <AdminPanel
               onDisputeResolved={syncBackendData}
               onRefreshAllLists={syncBackendData}
+            />
+          )}
+
+          {/* TAB 7: PROFILE DASHBOARD */}
+          {activeTab === "PROFILE" && (
+            <ProfileTab
+              activePersona={activePersona}
+              wallet={activeWallet}
+              listings={listings}
+              transactions={transactions}
+              isDarkMode={isDarkMode}
+              onNavigate={(tab) => navigate(tab)}
             />
           )}
         </React.Suspense>
