@@ -41,8 +41,6 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const allPersonas = [...SYSTEM_PERSONAS, ...customPersonas];
-
   // Login State
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     const saved = localStorage.getItem("ticketswap_is_logged_in");
@@ -101,6 +99,16 @@ export default function App() {
     }
     return SYSTEM_PERSONAS[0]; // Default: Raghu (Buyer)
   });
+
+  // Dynamically compute allPersonas ensuring the logged-in persona is always included in the sandbox header
+  const allPersonas = [...SYSTEM_PERSONAS, ...customPersonas];
+  if (
+    isLoggedIn &&
+    activePersona &&
+    !allPersonas.some((p) => p.id === activePersona.id)
+  ) {
+    allPersonas.push(activePersona);
+  }
 
   const [isPending, startTransition] = useTransition();
 
@@ -347,6 +355,19 @@ export default function App() {
             );
             setIsLoggedIn(true);
             localStorage.setItem("ticketswap_is_logged_in", "true");
+
+            // Auto-persist successfully logged-in user to the local workspace custom switchers if not present
+            const isSystem = SYSTEM_PERSONAS.some((p) => p.id === persona.id);
+            const isCustom = customPersonas.some((p) => p.id === persona.id);
+            if (!isSystem && !isCustom) {
+              const updated = [...customPersonas, persona];
+              setCustomPersonas(updated);
+              localStorage.setItem(
+                "ticketswap_custom_personas",
+                JSON.stringify(updated),
+              );
+            }
+
             const targetTab = persona.role === "admin" ? "ADMIN" : "HOME";
             navigate(targetTab, persona.id);
           }}
