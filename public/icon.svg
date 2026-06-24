@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#db2777;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4f46e5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#grad)" />
+  <!-- Ticket shape in the center -->
+  <path d="M120 180 C120 165, 135 150, 150 150 L362 150 C377 150, 392 165, 392 180 C392 195, 402 205, 417 205 C427 205, 432 215, 432 225 L432 287 C432 297, 427 307, 417 307 C402 307, 392 317, 392 332 C392 347, 377 362, 362 362 L150 362 C135 362, 120 347, 120 332 C120 317, 110 307, 95 307 C85 307, 80 297, 80 287 L80 225 C80 215, 85 205, 95 205 C110 205, 120 195, 120 180 Z" fill="#ffffff" />
+  <!-- Decorative film strip punches -->
+  <circle cx="160" cy="256" r="16" fill="#db2777" />
+  <circle cx="352" cy="256" r="16" fill="#4f46e5" />
+  <!-- Dotted Ticket divider -->
+  <line x1="216" y1="180" x2="216" y2="332" stroke="#db2777" stroke-width="5" stroke-dasharray="10,10" />
+  <line x1="296" y1="180" x2="296" y2="332" stroke="#4f46e5" stroke-width="5" stroke-dasharray="10,10" />
+</svg>
