@@ -1247,14 +1247,14 @@ export default function App() {
             © 2026 TicketSwap Inc. All rights reserved. Platform secure escrow
             commission operates at default ₹10 per ticket trade transaction.
           </p>
-          <div className="flex justify-center items-center gap-3.5 text-[11px] text-zinc-650 font-mono">
+          {/* <div className="flex justify-center items-center gap-3.5 text-[11px] text-zinc-650 font-mono">
             <span>
               Development App URL:
               https://ais-dev-lwuzbioaepmjeoyupuvtj4-692488307747.asia-east1.run.app
             </span>
             <span>•</span>
             <span>Local Time: 07:02:51 IST</span>
-          </div>
+          </div> */}
         </div>
       </footer>
 
