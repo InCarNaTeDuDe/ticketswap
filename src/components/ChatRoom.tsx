@@ -41,7 +41,7 @@ export default function ChatRoom({
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  const chatBottomRef = useRef<HTMLDivElement | null>(null);
+  const messageContainerRef = useRef<HTMLDivElement | null>(null);
 
   const fetchChatDetails = async () => {
     try {
@@ -75,9 +75,12 @@ export default function ChatRoom({
   }, [transactionId]);
 
   useEffect(() => {
-    // Scroll chat to bottom
-    if (chatBottomRef.current) {
-      chatBottomRef.current.scrollIntoView({ behavior: "smooth" });
+    // Scroll chat container to bottom smoothly without triggering parent window jumps
+    if (messageContainerRef.current) {
+      messageContainerRef.current.scrollTo({
+        top: messageContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
     }
   }, [messages]);
 
@@ -603,6 +606,7 @@ export default function ChatRoom({
 
           {/* Messaging Area viewport */}
           <div
+            ref={messageContainerRef}
             className="flex-1 p-4 overflow-y-auto space-y-3 font-sans"
             role="log"
             aria-live="polite"
@@ -651,8 +655,6 @@ export default function ChatRoom({
                 </div>
               );
             })}
-
-            <div ref={chatBottomRef} />
           </div>
 
           {/* Global error or success mini alert widgets */}
