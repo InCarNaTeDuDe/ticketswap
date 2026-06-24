@@ -1057,6 +1057,7 @@ export default function App() {
                   activeUserId={activePersona.id}
                   activeUserName={activePersona.name}
                   onStatusUpdate={syncBackendData}
+                  isDarkMode={isDarkMode}
                 />
               ) : (
                 <div className="max-w-4xl mx-auto px-4 py-8">
