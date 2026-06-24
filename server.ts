@@ -9,6 +9,7 @@ import { v1Router } from "./server/routes/v1.js";
 dotenv.config();
 
 const app = express();
+app.enable("trust proxy");
 app.use(express.json({ limit: "10mb" }));
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;

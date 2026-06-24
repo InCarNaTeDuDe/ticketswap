@@ -318,7 +318,8 @@ export class AuthController {
         return;
       }
       const context = req.query.context || "LOGIN";
-      const redirectUri = `${req.protocol}://${req.get("host")}/api/auth/google/callback`;
+      const protocol = req.get("x-forwarded-proto") || req.protocol;
+      const redirectUri = `${protocol}://${req.get("host")}/api/auth/google/callback`;
 
       const googleUrl =
         `https://accounts.google.com/o/oauth2/v2/auth?` +
@@ -383,7 +384,8 @@ export class AuthController {
         return;
       }
 
-      const redirectUri = `${req.protocol}://${req.get("host")}/api/auth/google/callback`;
+      const protocol = req.get("x-forwarded-proto") || req.protocol;
+      const redirectUri = `${protocol}://${req.get("host")}/api/auth/google/callback`;
 
       // 1. Exchange auth code for tokens
       const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
