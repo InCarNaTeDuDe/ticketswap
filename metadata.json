@@ -1,0 +1,6 @@
+{
+  "name": "TicketSwap",
+  "description": "Secure movie ticket resale marketplace featuring Connect Mode (₹5 fee, chat matching) and Safe Mode (transfers held in Escrow, physical OTP verification, and 60-min dispute protection). Includes fully functional chat, simulated Razorpay, and an Admin control panel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
