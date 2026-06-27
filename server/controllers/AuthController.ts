@@ -327,14 +327,22 @@ export class AuthController {
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
         `&response_type=code` +
         `&scope=openid%20email%20profile` +
-        `&state=${encodeURIComponent(context as string)}` +
-        `&prompt=consent%20select_account`;
+        `&state=${encodeURIComponent(context as string)}`;
 
       res.redirect(googleUrl);
     } catch (err: any) {
       res
         .status(500)
         .send(`Failed to generate Google Auth URL: ${err.message}`);
+    }
+  }
+
+  // Return Google Client ID for client-side One Tap initialization
+  static async getGoogleClientId(req: Request, res: Response): Promise<void> {
+    try {
+      res.json({ clientId: process.env.GOOGLE_CLIENT_ID || "" });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
     }
   }
 
@@ -446,13 +454,6 @@ export class AuthController {
       let user = await userRepo.getByEmail(cleanEmail);
       let isNew = false;
       if (!user) {
-        if (state === "LOGIN") {
-          renderErrorPage(
-            "No registered account found with this Google email. Please sign up first using the Register / Sign Up tab!",
-          );
-          return;
-        }
-
         user = new User();
         user.id = `user_${Date.now()}`;
         user.name = name;

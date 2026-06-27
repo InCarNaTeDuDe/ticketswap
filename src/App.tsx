@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useTransition } from "react";
+"use client";
+
+import React, { useState, useEffect, useTransition, use } from "react";
 import {
   Ticket,
   Compass,
@@ -168,10 +170,23 @@ export default function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [isLoggedIn, activePersona.id]);
 
-  // Data lists
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [activeWallet, setActiveWallet] = useState<Wallet | null>(null);
+  // React 19 stateful Promises for the use() hook
+  const [listingsPromise, setListingsPromise] = useState<Promise<Listing[]>>(
+    () => fetch("/api/listings").then((r) => r.json() as Promise<Listing[]>),
+  );
+  const [transactionsPromise, setTransactionsPromise] = useState<
+    Promise<Transaction[]>
+  >(() =>
+    fetch("/api/admin/stats").then((r) =>
+      r.json().then((d) => d.transactions as Transaction[]),
+    ),
+  );
+  const [walletPromise, setWalletPromise] = useState<Promise<Wallet | null>>(
+    () =>
+      fetch(`/api/wallets/${activePersona.id}`).then(
+        (r) => r.json() as Promise<Wallet>,
+      ),
+  );
 
   // Search/Filters (Browse page)
   const [searchQuery, setSearchQuery] = useState("");
@@ -193,32 +208,36 @@ export default function App() {
   const [globalSuccess, setGlobalSuccess] = useState("");
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
 
-  // Sync tab-specific data from backend to avoid redundant requests
+  // Sync tab-specific data by dynamically refreshing stateful Promises
   const syncBackendData = async (
     tab = activeTab,
     personaId = activePersona.id,
   ) => {
     if (!personaId) return;
     try {
-      // 1. Fetch listings only when viewing Home or Browse resale tickets
       if (tab === "HOME" || tab === "BROWSE") {
-        const resListings = await fetch("/api/listings");
-        const listData = await resListings.json();
-        setListings(listData);
+        setListingsPromise(
+          fetch("/api/listings").then((r) => r.json() as Promise<Listing[]>),
+        );
       }
-
-      // 2. Fetch admin stats/transactions only when viewing Home, Swaps (MESSAGES) or Admin Ops
-      if (tab === "HOME" || tab === "MESSAGES" || tab === "ADMIN") {
-        const resStats = await fetch("/api/admin/stats");
-        const stats = await resStats.json();
-        setTransactions(stats.transactions);
+      if (
+        tab === "HOME" ||
+        tab === "MESSAGES" ||
+        tab === "ADMIN" ||
+        tab === "PROFILE"
+      ) {
+        setTransactionsPromise(
+          fetch("/api/admin/stats").then((r) =>
+            r.json().then((d) => d.transactions as Transaction[]),
+          ),
+        );
       }
-
-      // 3. Fetch active user wallet balance only when viewing Wallet or Home dashboard
-      if (tab === "WALLET" || tab === "HOME") {
-        const resWallet = await fetch(`/api/wallets/${personaId}`);
-        const walletData = await resWallet.json();
-        setActiveWallet(walletData);
+      if (tab === "WALLET" || tab === "HOME" || tab === "PROFILE") {
+        setWalletPromise(
+          fetch(`/api/wallets/${personaId}`).then(
+            (r) => r.json() as Promise<Wallet>,
+          ),
+        );
       }
     } catch (err) {
       console.error("Data synchronization failed:", err);
@@ -303,11 +322,10 @@ export default function App() {
 
   const handleWalletRefill = async () => {
     try {
-      const res = await fetch(`/api/wallets/${activePersona.id}/refill`, {
+      const refillPromise = fetch(`/api/wallets/${activePersona.id}/refill`, {
         method: "POST",
-      });
-      const walletData = await res.json();
-      setActiveWallet(walletData);
+      }).then((r) => r.json() as Promise<Wallet>);
+      setWalletPromise(refillPromise);
       setGlobalSuccess(
         "Demo Wallet funded with ₹500 successfully via simulated Razorpay UPI!",
       );
@@ -318,37 +336,19 @@ export default function App() {
   };
 
   const handleWalletWithdraw = async (amount: number) => {
-    const res = await fetch(`/api/wallets/${activePersona.id}/withdraw`, {
+    const withdrawPromise = fetch(`/api/wallets/${activePersona.id}/withdraw`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ amount }),
+    }).then(async (r) => {
+      if (!r.ok) {
+        const data = await r.json();
+        throw new Error(data.error || "Withdrawal failed");
+      }
+      return r.json() as Promise<Wallet>;
     });
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.error || "Withdrawal failed");
-    }
-    const walletData = await res.json();
-    setActiveWallet(walletData);
+    setWalletPromise(withdrawPromise);
   };
-
-  // Filter listings
-  const filteredListings = listings.filter((l) => {
-    // Exclude own listings from browse for pure buying test logic, or show them beautifully
-    const matchesSearch =
-      l.movieName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.theatreName.toLowerCase().includes(searchQuery.toLowerCase());
-    if (!matchesSearch) return false;
-
-    if (filterMode === "SAVINGS_HIGH") {
-      return l.originalPrice - l.sellingPrice >= 100;
-    }
-    return true;
-  });
-
-  // Count active chats for user
-  const userTransactions = transactions.filter(
-    (t) => t.buyerId === activePersona.id || t.sellerId === activePersona.id,
-  );
 
   if (!isLoggedIn) {
     return (
@@ -397,6 +397,30 @@ export default function App() {
       </React.Suspense>
     );
   }
+
+  // React 19 conditional use() hook resolvers (only run when the user is logged in!)
+  const listings = use(listingsPromise);
+  const transactions = use(transactionsPromise);
+  const activeWallet = use(walletPromise);
+
+  // Filter listings
+  const filteredListings = listings.filter((l) => {
+    // Exclude own listings from browse for pure buying test logic, or show them beautifully
+    const matchesSearch =
+      l.movieName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      l.theatreName.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+
+    if (filterMode === "SAVINGS_HIGH") {
+      return l.originalPrice - l.sellingPrice >= 100;
+    }
+    return true;
+  });
+
+  // Count active chats for user
+  const userTransactions = transactions.filter(
+    (t) => t.buyerId === activePersona.id || t.sellerId === activePersona.id,
+  );
 
   const isSystemPersona = SYSTEM_PERSONAS.some(
     (p) => p.id === activePersona.id,
@@ -1247,14 +1271,14 @@ export default function App() {
             © 2026 TicketSwap Inc. All rights reserved. Platform secure escrow
             commission operates at default ₹10 per ticket trade transaction.
           </p>
-          {/* <div className="flex justify-center items-center gap-3.5 text-[11px] text-zinc-650 font-mono">
+          <div className="flex justify-center items-center gap-3.5 text-[11px] text-zinc-650 font-mono">
             <span>
               Development App URL:
               https://ais-dev-lwuzbioaepmjeoyupuvtj4-692488307747.asia-east1.run.app
             </span>
             <span>•</span>
             <span>Local Time: 07:02:51 IST</span>
-          </div> */}
+          </div>
         </div>
       </footer>
 

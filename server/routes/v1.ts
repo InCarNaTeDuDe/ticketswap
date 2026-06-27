@@ -17,6 +17,7 @@ router.post("/auth/login-mobile", AuthController.loginWithMobile);
 router.post("/auth/login-email", AuthController.loginWithEmail);
 router.post("/auth/login-google", AuthController.loginWithGoogle);
 router.get("/auth/google/url", AuthController.getGoogleAuthUrl);
+router.get("/auth/google/client-id", AuthController.getGoogleClientId);
 router.get("/auth/google/callback", AuthController.handleGoogleCallback);
 router.post("/auth/forgot-password", AuthController.forgotPassword);
 
