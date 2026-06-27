@@ -17,8 +17,8 @@ import {
 import { Persona } from "../types";
 import { useFetch } from "../hooks/useFetch";
 import GoogleOneTap from "./Auth/GoogleOneTap";
-import GoogleSsoButton from "./Auth/GoogleSSOButton";
 import ErrorDisplay from "./Auth/ErrorDisplay";
+import GoogleSsoButton from "./Auth/GoogleSsoButton";
 
 interface LoginPageProps {
   onLoginSuccess: (persona: Persona) => void;
