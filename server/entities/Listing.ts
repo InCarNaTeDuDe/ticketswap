@@ -38,6 +38,15 @@ export class Listing {
   @Column({ type: "varchar", default: "AVAILABLE" })
   status!: 'AVAILABLE' | 'MATCH_REQUESTED' | 'MATCH_ACCEPTED' | 'CHAT_OPEN' | 'PAYMENT_PENDING' | 'MEETING_SCHEDULED' | 'OTP_PENDING' | 'DISPUTE_WINDOW' | 'COMPLETED' | 'CANCELLED' | 'REFUNDED' | 'DISPUTED';
 
+  @Column({ type: "varchar", default: "TicketSwap" })
+  category!: 'TicketSwap' | 'DayMates';
+
+  @Column({ type: "boolean", default: true })
+  isTicketSwap!: boolean;
+
+  @Column({ type: "boolean", default: false })
+  isDayMates!: boolean;
+
   @CreateDateColumn()
   createdAt!: Date;
 }

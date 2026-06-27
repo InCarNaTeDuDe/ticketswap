@@ -1,9 +1,5 @@
 import { Request, Response } from "express";
-import {
-  registerSchema,
-  requestOtpSchema,
-  loginSchema,
-} from "../validators/schemas.js";
+import { registerSchema, requestOtpSchema, loginSchema } from "../validators/schemas.js";
 import { UserRepository } from "../repositories/UserRepository.js";
 import { WalletService } from "../services/WalletService.js";
 import { User } from "../entities/User.js";
@@ -21,26 +17,20 @@ export class AuthController {
       }
 
       const { mobileNumber } = parsed.data;
-
+      
       // Look up or establish user placeholder or write active session code
       let user = await userRepo.getByMobile(mobileNumber);
-
+      
       // Generate a realistic 6 digit OTP code
-      const generatedOtp = Math.floor(
-        100000 + Math.random() * 900000,
-      ).toString();
-
+      const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      
       if (!user) {
         // If user doesn't exist, we can register them dynamically when they verify
-        console.log(
-          `Generating pre-registration OTP for new mobile number ${mobileNumber}: ${generatedOtp}`,
-        );
+        console.log(`Generating pre-registration OTP for new mobile number ${mobileNumber}: ${generatedOtp}`);
       } else {
         user.currentOtp = generatedOtp;
         await userRepo.save(user);
-        console.log(
-          `Saved Login OTP for registered User ${user.name} (${mobileNumber}): ${generatedOtp}`,
-        );
+        console.log(`Saved Login OTP for registered User ${user.name} (${mobileNumber}): ${generatedOtp}`);
       }
 
       // For developers/testers, we return the simulation OTP directly in JSON payload
@@ -48,12 +38,10 @@ export class AuthController {
         success: true,
         message: "OTP dispatched successfully via simulated carrier!",
         simulationOtp: generatedOtp, // Output here so UI can pre fill / present it to the tester
-        isNewUser: !user,
+        isNewUser: !user
       });
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ error: error.message || "Failed to dispatch OTP" });
+      res.status(500).json({ error: error.message || "Failed to dispatch OTP" });
     }
   }
 
@@ -62,30 +50,21 @@ export class AuthController {
     try {
       const validationResult = registerSchema.safeParse(req.body);
       if (!validationResult.success) {
-        res
-          .status(400)
-          .json({ error: validationResult.error.issues[0].message });
+        res.status(400).json({ error: validationResult.error.issues[0].message });
         return;
       }
 
-      const { name, mobileNumber, password, email, role, avatar } =
-        validationResult.data;
+      const { name, mobileNumber, password, email, role, avatar } = validationResult.data;
 
       // Duplicate Check
       const existingUser = await userRepo.getByMobile(mobileNumber);
       if (existingUser) {
-        res
-          .status(400)
-          .json({
-            error: "Mobile number is already registered. Please login instead!",
-          });
+        res.status(400).json({ error: "Mobile number is already registered. Please login instead!" });
         return;
       }
 
       if (email) {
-        const existingEmail = await userRepo.getByEmail(
-          email.trim().toLowerCase(),
-        );
+        const existingEmail = await userRepo.getByEmail(email.trim().toLowerCase());
         if (existingEmail) {
           if (email.trim().toLowerCase().endsWith("gmail.com")) {
             // Gmail is already registered, so we find and sign them in seamlessly!
@@ -99,15 +78,11 @@ export class AuthController {
                 email: existingEmail.email,
                 role: existingEmail.role,
                 avatar: existingEmail.avatar,
-              },
+              }
             });
             return;
           }
-          res
-            .status(400)
-            .json({
-              error: "Email address is already in use by another profile.",
-            });
+          res.status(400).json({ error: "Email address is already in use by another profile." });
           return;
         }
       }
@@ -119,16 +94,10 @@ export class AuthController {
       newUser.mobileNumber = mobileNumber;
       newUser.password = password; // Simple cleartext storage as requested for developer convenience
       newUser.email = email || undefined;
-      newUser.role = role || "buyer";
-      newUser.avatar =
-        avatar ||
-        `https://images.unsplash.com/photo-${
-          [
-            "1544005313-94ddf0286df2",
-            "1507003211169-0a1dd7228f2d",
-            "1494790108377-be9c29b29330",
-          ][Math.floor(Math.random() * 3)]
-        }?w=100&q=80`;
+      newUser.role = role || 'buyer';
+      newUser.avatar = avatar || `https://images.unsplash.com/photo-${[
+        '1544005313-94ddf0286df2', '1507003211169-0a1dd7228f2d', '1494790108377-be9c29b29330'
+      ][Math.floor(Math.random() * 3)]}?w=100&q=80`;
 
       await userRepo.save(newUser);
 
@@ -144,14 +113,10 @@ export class AuthController {
           email: newUser.email,
           role: newUser.role,
           avatar: newUser.avatar,
-        },
+        }
       });
     } catch (error: any) {
-      res
-        .status(500)
-        .json({
-          error: error.message || "Failed to complete signup registration",
-        });
+      res.status(500).json({ error: error.message || "Failed to complete signup registration" });
     }
   }
 
@@ -160,9 +125,7 @@ export class AuthController {
     try {
       const validationResult = loginSchema.safeParse(req.body);
       if (!validationResult.success) {
-        res
-          .status(400)
-          .json({ error: validationResult.error.issues[0].message });
+        res.status(400).json({ error: validationResult.error.issues[0].message });
         return;
       }
 
@@ -179,21 +142,17 @@ export class AuthController {
         newUser.password = password || "password123";
         newUser.role = "buyer";
         newUser.avatar = `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80`;
-
+        
         await userRepo.save(newUser);
         await WalletService.getOrCreateWallet(newUser.id);
-
+        
         user = newUser;
       }
 
       // If OTP is specified, bypass password check
       if (otp) {
         // Since we simulate, we also allow the correct code or allow '999999' as standard master bypass code
-        if (
-          otp === "999999" ||
-          otp === user.currentOtp ||
-          mobileNumber.startsWith("98765")
-        ) {
+        if (otp === "999999" || otp === user.currentOtp || mobileNumber.startsWith("98765")) {
           // Clear current OTP code context
           user.currentOtp = undefined;
           await userRepo.save(user);
@@ -207,16 +166,11 @@ export class AuthController {
               email: user.email,
               role: user.role,
               avatar: user.avatar,
-            },
+            }
           });
           return;
         } else {
-          res
-            .status(400)
-            .json({
-              error:
-                "Invalid OTP code entered. Please re-enter or request a new one.",
-            });
+          res.status(400).json({ error: "Invalid OTP code entered. Please re-enter or request a new one." });
           return;
         }
       }
@@ -233,26 +187,16 @@ export class AuthController {
               email: user.email,
               role: user.role,
               avatar: user.avatar,
-            },
+            }
           });
           return;
         } else {
-          res
-            .status(400)
-            .json({
-              error:
-                "Incorrect private security passcode. Try standard password or switch to OTP verification!",
-            });
+          res.status(400).json({ error: "Incorrect private security passcode. Try standard password or switch to OTP verification!" });
           return;
         }
       }
 
-      res
-        .status(400)
-        .json({
-          error:
-            "Either security passcode or mobile verification OTP must be entered to continue.",
-        });
+      res.status(400).json({ error: "Either security passcode or mobile verification OTP must be entered to continue." });
     } catch (error: any) {
       res.status(500).json({ error: error.message || "Failed to login" });
     }
@@ -263,27 +207,18 @@ export class AuthController {
     try {
       const { email, password } = req.body;
       if (!email || !password) {
-        res
-          .status(400)
-          .json({ error: "Email address and password are required to login." });
+        res.status(400).json({ error: "Email address and password are required to login." });
         return;
       }
 
       const user = await userRepo.getByEmail(email.trim().toLowerCase());
       if (!user) {
-        res
-          .status(400)
-          .json({
-            error:
-              "We couldn't find an account associated with this email address.",
-          });
+        res.status(400).json({ error: "We couldn't find an account associated with this email address." });
         return;
       }
 
       if (user.password !== password) {
-        res
-          .status(400)
-          .json({ error: "Incorrect password. Please verify and try again." });
+        res.status(400).json({ error: "Incorrect password. Please verify and try again." });
         return;
       }
 
@@ -296,12 +231,10 @@ export class AuthController {
           email: user.email,
           role: user.role,
           avatar: user.avatar,
-        },
+        }
       });
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ error: error.message || "Email login process failed." });
+      res.status(500).json({ error: error.message || "Email login process failed." });
     }
   }
 
@@ -310,30 +243,23 @@ export class AuthController {
     try {
       const clientId = process.env.GOOGLE_CLIENT_ID;
       if (!clientId) {
-        res
-          .status(400)
-          .send(
-            "Google Client ID is not configured on the server. Please add GOOGLE_CLIENT_ID in your server's .env file.",
-          );
+        res.status(400).send("Google Client ID is not configured on the server. Please add GOOGLE_CLIENT_ID in your server's .env file.");
         return;
       }
       const context = req.query.context || "LOGIN";
       const protocol = req.get("x-forwarded-proto") || req.protocol;
       const redirectUri = `${protocol}://${req.get("host")}/api/auth/google/callback`;
-
-      const googleUrl =
-        `https://accounts.google.com/o/oauth2/v2/auth?` +
+      
+      const googleUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
         `client_id=${encodeURIComponent(clientId)}` +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
         `&response_type=code` +
         `&scope=openid%20email%20profile` +
         `&state=${encodeURIComponent(context as string)}`;
-
+      
       res.redirect(googleUrl);
     } catch (err: any) {
-      res
-        .status(500)
-        .send(`Failed to generate Google Auth URL: ${err.message}`);
+      res.status(500).send(`Failed to generate Google Auth URL: ${err.message}`);
     }
   }
 
@@ -347,10 +273,7 @@ export class AuthController {
   }
 
   // Handle Google OAuth Callback
-  static async handleGoogleCallback(
-    req: Request,
-    res: Response,
-  ): Promise<void> {
+  static async handleGoogleCallback(req: Request, res: Response): Promise<void> {
     const renderErrorPage = (errorText: string) => {
       res.setHeader("Content-Type", "text/html");
       res.send(`
@@ -386,9 +309,7 @@ export class AuthController {
       const clientId = process.env.GOOGLE_CLIENT_ID;
       const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
       if (!clientId || !clientSecret) {
-        renderErrorPage(
-          "Server Google Client ID or Client Secret is not configured. Please add them to your .env file.",
-        );
+        renderErrorPage("Server Google Client ID or Client Secret is not configured. Please add them to your .env file.");
         return;
       }
 
@@ -411,9 +332,7 @@ export class AuthController {
       if (!tokenRes.ok) {
         const errorDetails = await tokenRes.text();
         console.error("Token Exchange Error Details:", errorDetails);
-        renderErrorPage(
-          "Failed to exchange authentication code with Google. Check server credentials.",
-        );
+        renderErrorPage("Failed to exchange authentication code with Google. Check server credentials.");
         return;
       }
 
@@ -425,12 +344,9 @@ export class AuthController {
       }
 
       // 2. Fetch profile info
-      const profileRes = await fetch(
-        "https://www.googleapis.com/oauth2/v3/userinfo",
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        },
-      );
+      const profileRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
 
       if (!profileRes.ok) {
         renderErrorPage("Failed to fetch user profile from Google.");
@@ -440,9 +356,7 @@ export class AuthController {
       const profile = await profileRes.json();
       const email = profile.email;
       const name = profile.name || profile.given_name || "Google User";
-      const picture =
-        profile.picture ||
-        `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(email)}`;
+      const picture = profile.picture || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(email)}`;
 
       if (!email) {
         renderErrorPage("Google profile did not contain an email address.");
@@ -458,11 +372,9 @@ export class AuthController {
         user.id = `user_${Date.now()}`;
         user.name = name;
         user.email = cleanEmail;
-        user.mobileNumber = Math.floor(
-          6000000000 + Math.random() * 4000000000,
-        ).toString();
+        user.mobileNumber = Math.floor(6000000000 + Math.random() * 4000000000).toString();
         user.password = "google_sso_pass_auto";
-        user.role = "buyer";
+        user.role = "buyer"; 
         user.avatar = picture;
         await userRepo.save(user);
 
@@ -481,7 +393,7 @@ export class AuthController {
           avatar: user.avatar,
         },
         isNew,
-        context: state || "LOGIN",
+        context: state || "LOGIN"
       };
 
       // 4. Send message back to parent window and close popup
@@ -512,10 +424,7 @@ export class AuthController {
       `);
     } catch (err: any) {
       console.error("Callback processing error:", err);
-      renderErrorPage(
-        err.message ||
-          "An unexpected error occurred during Google callback processing.",
-      );
+      renderErrorPage(err.message || "An unexpected error occurred during Google callback processing.");
     }
   }
 
@@ -524,9 +433,7 @@ export class AuthController {
     try {
       const { email, name, avatar } = req.body;
       if (!email) {
-        res
-          .status(400)
-          .json({ error: "Email address is required for Gmail SSO." });
+        res.status(400).json({ error: "Email address is required for Gmail SSO." });
         return;
       }
 
@@ -537,16 +444,12 @@ export class AuthController {
         // If not found, create a new User automatically for a seamless Google SSO experience!
         user = new User();
         user.id = `user_${Date.now()}`;
-        user.name = name || cleanEmail.split("@")[0];
+        user.name = name || cleanEmail.split('@')[0];
         user.email = cleanEmail;
-        user.mobileNumber = Math.floor(
-          6000000000 + Math.random() * 4000000000,
-        ).toString();
+        user.mobileNumber = Math.floor(6000000000 + Math.random() * 4000000000).toString();
         user.password = "google_sso_pass_auto";
-        user.role = "buyer";
-        user.avatar =
-          avatar ||
-          "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80";
+        user.role = "buyer"; 
+        user.avatar = avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80";
         await userRepo.save(user);
 
         // Preseed wallet with register reward
@@ -564,14 +467,10 @@ export class AuthController {
           email: user.email,
           role: user.role,
           avatar: user.avatar,
-        },
+        }
       });
     } catch (error: any) {
-      res
-        .status(500)
-        .json({
-          error: error.message || "Google single sign-on system breakdown.",
-        });
+      res.status(500).json({ error: error.message || "Google single sign-on system breakdown." });
     }
   }
 
@@ -580,22 +479,13 @@ export class AuthController {
     try {
       const { mobileNumber, newPassword } = req.body;
       if (!mobileNumber || !newPassword) {
-        res
-          .status(400)
-          .json({
-            error: "Mobile number and chosen passcode are required to proceed",
-          });
+        res.status(400).json({ error: "Mobile number and chosen passcode are required to proceed" });
         return;
       }
 
       const user = await userRepo.getByMobile(mobileNumber);
       if (!user) {
-        res
-          .status(404)
-          .json({
-            error:
-              "No profile matches this mobile number in our verified records.",
-          });
+        res.status(404).json({ error: "No profile matches this mobile number in our verified records." });
         return;
       }
 
@@ -604,8 +494,7 @@ export class AuthController {
 
       res.json({
         success: true,
-        message:
-          "Security passcode reset successfully! Please log in now with your updated credentials.",
+        message: "Security passcode reset successfully! Please log in now with your updated credentials."
       });
     } catch (error: any) {
       res.status(500).json({ error: error.message });

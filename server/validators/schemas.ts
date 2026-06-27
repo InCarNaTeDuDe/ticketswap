@@ -78,11 +78,14 @@ export const createListingSchema = z.object({
   showTime: z.string(), // ISO String
   seatNumber: makeSafeString(z.string().min(1, { message: "Seat layout information is required" })),
   originalPrice: z.number().positive(),
-  sellingPrice: z.number().positive(),
+  sellingPrice: z.number().nonnegative(),
   screenshotUrl: z.string().url().optional().or(z.literal('')),
   description: safeOptionalString,
   sellerId: idSchema,
   sellerName: makeSafeString(z.string()),
+  category: z.enum(["TicketSwap", "DayMates"]).default("TicketSwap"),
+  isTicketSwap: z.boolean().default(true),
+  isDayMates: z.boolean().default(false),
 });
 
 // 5. Create Transaction Schema

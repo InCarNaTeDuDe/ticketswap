@@ -20,20 +20,10 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_DATABASE || "ticketswap_db",
   synchronize: true, // Auto create/update schemas - ideal for development/applet environment
   logging: false,
-  entities: [
-    Listing,
-    Transaction,
-    ChatMessage,
-    Wallet,
-    WalletEntry,
-    AdminConfig,
-    User,
-  ],
+  entities: [Listing, Transaction, ChatMessage, Wallet, WalletEntry, AdminConfig, User],
   subscribers: [],
   migrations: [],
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : undefined,
 });
 
 let isInitialized = false;
@@ -47,62 +37,36 @@ export async function initDatabase(): Promise<boolean> {
   const bypassDb = false; // Changed to false to allow real DB connection if host is configured, but fallback gracefully
 
   if (bypassDb) {
-    console.warn(
-      "====================================================================",
-    );
+    console.warn("====================================================================");
     console.warn("📢 DATABASE CONNECTED: NO (Bypassed)");
-    console.warn(
-      "👉 STATUS: Running in high-fidelity sandbox in-memory simulated persistence layer.",
-    );
-    console.warn(
-      "====================================================================",
-    );
+    console.warn("👉 STATUS: Running in high-fidelity sandbox in-memory simulated persistence layer.");
+    console.warn("====================================================================");
     return false;
   }
 
   // If there's no DB configuration, we can inform the user and skip crashing
   if (!process.env.DB_HOST) {
-    console.warn(
-      "====================================================================",
-    );
-    console.warn(
-      "📢 DATABASE CONNECTED: NO (DB_HOST environment variable not configured)",
-    );
-    console.warn(
-      "👉 STATUS: Falling back to structured in-memory simulated persistence layer.",
-    );
-    console.warn(
-      "====================================================================",
-    );
+    console.warn("====================================================================");
+    console.warn("📢 DATABASE CONNECTED: NO (DB_HOST environment variable not configured)");
+    console.warn("👉 STATUS: Falling back to structured in-memory simulated persistence layer.");
+    console.warn("====================================================================");
     return false;
   }
 
   try {
     await AppDataSource.initialize();
     isInitialized = true;
-    console.log(
-      "====================================================================",
-    );
+    console.log("====================================================================");
     console.log("🚀 DATABASE CONNECTED: YES");
-    console.log(
-      "👉 STATUS: TypeORM PostgreSQL Database connected and synchronized successfully!",
-    );
-    console.log(
-      "====================================================================",
-    );
+    console.log("👉 STATUS: TypeORM PostgreSQL Database connected and synchronized successfully!");
+    console.log("====================================================================");
     return true;
   } catch (error: any) {
-    console.error(
-      "====================================================================",
-    );
+    console.error("====================================================================");
     console.error("❌ DATABASE CONNECTED: NO (Initialization Failed)");
     console.error("👉 ERROR DETAILS:", error?.message || error);
-    console.warn(
-      "👉 STATUS: Falling back to structured in-memory simulated persistence layer.",
-    );
-    console.warn(
-      "====================================================================",
-    );
+    console.warn("👉 STATUS: Falling back to structured in-memory simulated persistence layer.");
+    console.warn("====================================================================");
     return false;
   }
 }

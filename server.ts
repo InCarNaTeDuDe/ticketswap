@@ -33,7 +33,7 @@ async function startServer() {
     const isHmrDisabled = process.env.DISABLE_HMR === "true";
     const vite = await createViteServer({
       configFile: path.resolve(process.cwd(), "vite.config.ts"),
-      server: {
+      server: { 
         middlewareMode: true,
         hmr: isHmrDisabled ? false : undefined,
         watch: isHmrDisabled ? null : undefined,

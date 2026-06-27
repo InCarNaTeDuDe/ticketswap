@@ -26,6 +26,9 @@ export class ListingService {
     newListing.sellerId = data.sellerId!;
     newListing.sellerName = data.sellerName!;
     newListing.status = "AVAILABLE";
+    newListing.category = data.category || "TicketSwap";
+    newListing.isTicketSwap = data.isTicketSwap !== undefined ? data.isTicketSwap : true;
+    newListing.isDayMates = data.isDayMates !== undefined ? data.isDayMates : false;
     newListing.createdAt = new Date();
 
     return await repo.save(newListing);
